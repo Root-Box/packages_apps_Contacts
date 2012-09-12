@@ -17,16 +17,21 @@
 package com.android.contacts.detail;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.app.VibrationPickerDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
 import android.media.RingtoneManager;
+import android.media.VibrationPattern;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.util.Log;
@@ -62,6 +67,12 @@ public class ContactLoaderFragment extends Fragment implements FragmentKeyListen
     /** The launch code when picking a notification */
     private static final int REQUEST_CODE_PICK_NOTIFICATION = 2;
 
+    /** The launch code when picking a ringtone */
+    private static final int REQUEST_CODE_PICK_VIBRATION = 2;
+
+    private final int VIB_OK = 10;
+    private final int VIB_CANCEL = 11;
+
     /** This is the Intent action to install a shortcut in the launcher. */
     private static final String ACTION_INSTALL_SHORTCUT =
             "com.android.launcher.action.INSTALL_SHORTCUT";
@@ -73,6 +84,7 @@ public class ContactLoaderFragment extends Fragment implements FragmentKeyListen
     private boolean mSendToVoicemailState;
     private String mCustomRingtone;
     private String mCustomNotification;
+    private String mCustomVibration;
 
     /**
      * This is a listener to the {@link ContactLoaderFragment} and will be notified when the
@@ -115,6 +127,25 @@ public class ContactLoaderFragment extends Fragment implements FragmentKeyListen
 
     public ContactLoaderFragment() {
     }
+
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            VibrationPattern mPattern = (VibrationPattern) msg.obj;
+            if (mPattern == null) {
+                msg.what = VIB_CANCEL;
+            }
+            switch (msg.what) {
+                case VIB_OK:
+                    handleVibrationPicked(mPattern.getUri());
+                    break;
+                case VIB_CANCEL:
+                default:
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -248,6 +279,7 @@ public class ContactLoaderFragment extends Fragment implements FragmentKeyListen
             mSendToVoicemailState = mContactData.isSendToVoicemail();
             mCustomRingtone = mContactData.getCustomRingtone();
             mCustomNotification = mContactData.getCustomNotification();
+            mCustomVibration = mContactData.getCustomVibration();
         }
 
         // Hide telephony-related settings (ringtone, send to voicemail)
@@ -260,6 +292,10 @@ public class ContactLoaderFragment extends Fragment implements FragmentKeyListen
         final MenuItem optionsRingtone = menu.findItem(R.id.menu_set_ringtone);
         if (optionsRingtone != null) {
             optionsRingtone.setVisible(mOptionsMenuOptions);
+        }
+        final MenuItem optionsVibration = menu.findItem(R.id.menu_set_vibration);
+        if (optionsVibration != null) {
+            optionsVibration.setVisible(mOptionsMenuOptions);
         }
 
         final MenuItem optionsNotification = menu.findItem(R.id.menu_set_notification);
@@ -317,6 +353,10 @@ public class ContactLoaderFragment extends Fragment implements FragmentKeyListen
             case R.id.menu_set_notification: {
                 if (mContactData == null) return false;
                 doPickNotification();
+            }
+            case R.id.menu_set_vibration: {
+                if (mContactData == null) return false;
+                doPickVibration();
                 return true;
             }
             case R.id.menu_share: {
@@ -473,6 +513,13 @@ public class ContactLoaderFragment extends Fragment implements FragmentKeyListen
         startActivityForResult(intent, REQUEST_CODE_PICK_NOTIFICATION);
     }
 
+    private void doPickVibration() {
+        DialogFragment newFragment = VibrationPickerDialog.newInstance(mHandler,
+                false, mContactData.getCustomVibration());
+        Log.d(TAG, "loading custom vib from: " + mContactData.getCustomVibration());
+        newFragment.show(getFragmentManager(), "dialog");
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) {
@@ -512,6 +559,17 @@ public class ContactLoaderFragment extends Fragment implements FragmentKeyListen
         }
         Intent intent = ContactSaveService.createSetNotification(
                 mContext, mLookupUri, mCustomNotification);
+        mContext.startService(intent);
+    }
+
+    private void handleVibrationPicked(Uri pickedUri) {
+        if (pickedUri == null) {
+            mCustomVibration = null;
+        } else {
+            mCustomVibration = pickedUri.toString();
+        }
+        Intent intent = ContactSaveService.createSetVibration(
+                mContext, mLookupUri, mCustomVibration);
         mContext.startService(intent);
     }
 

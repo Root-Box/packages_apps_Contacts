@@ -183,6 +183,7 @@ public class ContactLoader extends AsyncTaskLoader<Contact> {
                 Contacts.CUSTOM_RINGTONE,
                 Contacts.CUSTOM_NOTIFICATION,
                 Contacts.IS_USER_PROFILE,
+                Contacts.CUSTOM_VIBRATION,
         };
 
         public static final int NAME_RAW_CONTACT_ID = 0;
@@ -256,6 +257,7 @@ public class ContactLoader extends AsyncTaskLoader<Contact> {
         public static final int CUSTOM_RINGTONE = 63;
         public static final int CUSTOM_NOTIFICATION = 64;
         public static final int IS_USER_PROFILE = 65;
+        public static final int CUSTOM_VIBRATION = 66;
     }
 
     /**
@@ -516,6 +518,7 @@ public class ContactLoader extends AsyncTaskLoader<Contact> {
         final boolean sendToVoicemail = cursor.getInt(ContactQuery.SEND_TO_VOICEMAIL) == 1;
         final String customRingtone = cursor.getString(ContactQuery.CUSTOM_RINGTONE);
         final String customNotification = cursor.getString(ContactQuery.CUSTOM_NOTIFICATION);
+        final String customVibration = cursor.getString(ContactQuery.CUSTOM_VIBRATION);
         final boolean isUserProfile = cursor.getInt(ContactQuery.IS_USER_PROFILE) == 1;
 
         Uri lookupUri;
@@ -529,7 +532,7 @@ public class ContactLoader extends AsyncTaskLoader<Contact> {
         return new Contact(mRequestedUri, contactUri, lookupUri, directoryId, lookupKey,
                 contactId, nameRawContactId, displayNameSource, photoId, photoUri, displayName,
                 altDisplayName, phoneticName, starred, presence, sendToVoicemail,
-                customRingtone, customNotification, isUserProfile);
+                customRingtone, customNotification, customVibration, isUserProfile);
     }
 
     /**

@@ -116,6 +116,8 @@ public class ContactSaveService extends IntentService {
 
     public static final String ACTION_SET_RINGTONE = "setRingtone";
     public static final String EXTRA_CUSTOM_RINGTONE = "customRingtone";
+    public static final String ACTION_SET_VIBRATION = "setVibration";
+    public static final String EXTRA_CUSTOM_VIBRATION = "customVibration";
 
     public static final String ACTION_SET_NOTIFICATION = "setNotification";
     public static final String EXTRA_CUSTOM_NOTIFICATION = "customNotification";
@@ -218,6 +220,8 @@ public class ContactSaveService extends IntentService {
             CallerInfoCacheUtils.sendUpdateCallerInfoCacheIntent(this);
         } else if (ACTION_SET_NOTIFICATION.equals(action)) {
             setNotification(intent);
+        } else if (ACTION_SET_VIBRATION.equals(action)) {
+            setVibration(intent);
             CallerInfoCacheUtils.sendUpdateCallerInfoCacheIntent(this);
         }
     }
@@ -889,6 +893,28 @@ public class ContactSaveService extends IntentService {
         }
         ContentValues values = new ContentValues(1);
         values.put(Contacts.CUSTOM_RINGTONE, value);
+        getContentResolver().update(contactUri, values, null, null);
+    }
+
+    public static Intent createSetVibration(Context context, Uri contactUri,
+            String value) {
+        Intent serviceIntent = new Intent(context, ContactSaveService.class);
+        serviceIntent.setAction(ContactSaveService.ACTION_SET_VIBRATION);
+        serviceIntent.putExtra(ContactSaveService.EXTRA_CONTACT_URI, contactUri);
+        serviceIntent.putExtra(ContactSaveService.EXTRA_CUSTOM_VIBRATION, value);
+
+        return serviceIntent;
+    }
+
+    private void setVibration(Intent intent) {
+        Uri contactUri = intent.getParcelableExtra(EXTRA_CONTACT_URI);
+        String value = intent.getStringExtra(EXTRA_CUSTOM_VIBRATION);
+        if (contactUri == null) {
+            Log.e(TAG, "Invalid arguments for setVibration");
+            return;
+        }
+        ContentValues values = new ContentValues(1);
+        values.put(Contacts.CUSTOM_VIBRATION, value);
         getContentResolver().update(contactUri, values, null, null);
     }
 
