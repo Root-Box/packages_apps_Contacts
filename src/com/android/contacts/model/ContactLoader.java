@@ -181,9 +181,9 @@ public class ContactLoader extends AsyncTaskLoader<Contact> {
                 Contacts.PHOTO_URI,
                 Contacts.SEND_TO_VOICEMAIL,
                 Contacts.CUSTOM_RINGTONE,
-                Contacts.CUSTOM_NOTIFICATION,
                 Contacts.IS_USER_PROFILE,
                 Contacts.CUSTOM_VIBRATION,
+                Contacts.CUSTOM_NOTIFICATION,
         };
 
         public static final int NAME_RAW_CONTACT_ID = 0;
@@ -255,9 +255,9 @@ public class ContactLoader extends AsyncTaskLoader<Contact> {
         public static final int PHOTO_URI = 61;
         public static final int SEND_TO_VOICEMAIL = 62;
         public static final int CUSTOM_RINGTONE = 63;
-        public static final int CUSTOM_NOTIFICATION = 64;
-        public static final int IS_USER_PROFILE = 65;
-        public static final int CUSTOM_VIBRATION = 66;
+        public static final int IS_USER_PROFILE = 64;
+        public static final int CUSTOM_VIBRATION = 65;
+        public static final int CUSTOM_NOTIFICATION = 66;
     }
 
     /**
